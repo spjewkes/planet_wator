@@ -9,7 +9,7 @@ import random
 
 from PySide2 import QtCore
 from PySide2.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, \
-    QHBoxLayout, QMainWindow
+    QHBoxLayout, QMainWindow, QAction
 from PySide2.QtGui import QPainter, QPixmap, QIcon
 from PySide2.QtCore import QSize, QPoint, Slot, QTimer
 
@@ -361,24 +361,19 @@ class MainWindow(QMainWindow):
         """
         Add the GUI elements to the window that represent the home state of the application.
         """
-        buttons = QHBoxLayout()
-        # Play button
-        play_button = QPushButton("Play")
-        play_button.clicked.connect(self._play)
-        buttons.addWidget(play_button)
-        # Pause button
-        pause_button = QPushButton("Pause")
-        pause_button.clicked.connect(self._pause)
-        buttons.addWidget(pause_button)
-        # Quit button
-        quit_button = QPushButton("Quit")
-        quit_button.clicked.connect(self._quit)
-        buttons.addWidget(quit_button)
+
+        toolbar = self.addToolBar("File")
+        play = QAction(QIcon("icon_play.png"), "Play", self)
+        toolbar.addAction(play)
+        pause = QAction(QIcon("icon_pause.png"), "Pause", self)
+        toolbar.addAction(pause)
+        toolbar.addSeparator()
+        quit = QAction(QIcon("icon_quit.png"), "Quit", self)
+        toolbar.addAction(quit)
+        toolbar.actionTriggered[QAction].connect(self.toolbar_pressed)
 
         layout = QVBoxLayout()
         layout.addWidget(self._wator_widget)
-        layout.addSpacing(10)
-        layout.addLayout(buttons)
 
         self.centralWidget().setLayout(layout)
 
@@ -402,6 +397,15 @@ class MainWindow(QMainWindow):
         Pause the running of the simulation.
         """
         self._wator_widget.pause()
+
+    def toolbar_pressed(self, action):
+        print(action.text)
+        if action.text() == "Play":
+            self._wator_widget.play()
+        elif action.text() == "Pause":
+            self._wator_widget.pause()
+        elif action.text() == "Quit":
+            QtCore.QCoreApplication.instance().quit()
 
 
 if __name__ == "__main__":
