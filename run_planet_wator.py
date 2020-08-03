@@ -333,11 +333,11 @@ class WaTorWidget(QWidget):
         self._ticks += 1
         self.repaint()
         fish, sharks = self._world.stats()
-        if sharks == 0:
-            print("No more sharks. Wa-Tor will become overrun with fish.")
-            self.pause()
-        elif fish == 0 and sharks == 0:
+        if fish == 0 and sharks == 0:
             print("Both sharks and fish have become extinct.")
+            self.pause()
+        elif sharks == 0:
+            print("No more sharks. Wa-Tor will become overrun with fish.")
             self.pause()
         print("Fish: {} - Sharks: {}".format(fish, sharks))
 
