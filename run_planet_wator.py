@@ -270,9 +270,9 @@ class World:
         """
         fish = len([mob for mob in self.mobs.values()
                     if isinstance(mob, WorldFish)])
-        shark = len([mob for mob in self.mobs.values()
-                     if isinstance(mob, WorldShark)])
-        return fish, shark
+        sharks = len([mob for mob in self.mobs.values()
+                      if isinstance(mob, WorldShark)])
+        return fish, sharks
 
 
 class WaTorWidget(QWidget):
@@ -332,7 +332,14 @@ class WaTorWidget(QWidget):
         self._world.update(self._ticks)
         self._ticks += 1
         self.repaint()
-        print(self._world.stats())
+        fish, sharks = self._world.stats()
+        if sharks == 0:
+            print("No more sharks. Wa-Tor will become overrun with fish.")
+            self.pause()
+        elif fish == 0 and sharks == 0:
+            print("Both sharks and fish have become extinct.")
+            self.pause()
+        print("Fish: {} - Sharks: {}".format(fish, sharks))
 
 
 class MainWindow(QMainWindow):
@@ -375,21 +382,21 @@ class MainWindow(QMainWindow):
 
         self.centralWidget().setLayout(layout)
 
-    @Slot()
+    @ Slot()
     def _quit(self):
         """
         Quit the application.
         """
         QtCore.QCoreApplication.instance().quit()
 
-    @Slot()
+    @ Slot()
     def _play(self):
         """
         Start running (or resume) the simulation.
         """
         self._wator_widget.play()
 
-    @Slot()
+    @ Slot()
     def _pause(self):
         """
         Pause the running of the simulation.
