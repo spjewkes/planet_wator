@@ -6,15 +6,15 @@ Application that runs an implementation of Planet Wa-Tor using Python and QT.
 
 import sys
 import random
+from abc import ABC, abstractmethod
 
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, \
-    QHBoxLayout, QMainWindow, QAction
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QWidget, QMainWindow, QAction
 from PySide2.QtGui import QPainter, QPixmap, QIcon
 from PySide2.QtCore import QSize, QPoint, Slot, QTimer
 
 
-class WorldBase:
+class WorldBase(ABC):
     """
     Base class describing a world object.
     """
@@ -64,12 +64,13 @@ class WorldBase:
                 moves.append(QPoint(posx, posy))
         return moves
 
+    @abstractmethod
     def make_move(self, oldpos, world):
         """
         Try to move the world object.
         """
-        pass
 
+    @abstractmethod
     def reproduce(self):
         """
         Try to reproduce the world object. Returns 'None' if there was no baby created.
@@ -159,7 +160,8 @@ class WorldShark(WorldBase):
 
         moves = WorldBase.generate_move_list(oldpos, world)
         fishmoves = [
-            move for move in moves if move in world.mobs and isinstance(world.mobs[move], WorldFish)]
+            move for move in moves if move in world.mobs and
+            isinstance(world.mobs[move], WorldFish)]
         emptymoves = [move for move in moves if move not in world.mobs]
 
         if fishmoves:
@@ -191,6 +193,17 @@ class WorldWater(WorldBase):
     def __init__(self):
         super(WorldWater, self).__init__(
             "water", QPixmap("sprite_water.png"))
+
+    def make_move(self, oldpos, world):
+        """
+        Try to move the world object.
+        """
+
+    def reproduce(self):
+        """
+        Try to reproduce the world object. Returns 'None' if there was no baby created.
+        """
+        return None
 
 
 class World:
@@ -368,8 +381,8 @@ class MainWindow(QMainWindow):
         pause = QAction(QIcon("icon_pause.png"), "Pause", self)
         toolbar.addAction(pause)
         toolbar.addSeparator()
-        quit = QAction(QIcon("icon_quit.png"), "Quit", self)
-        toolbar.addAction(quit)
+        quit_app = QAction(QIcon("icon_quit.png"), "Quit", self)
+        toolbar.addAction(quit_app)
         toolbar.actionTriggered[QAction].connect(self.toolbar_pressed)
 
         layout = QVBoxLayout()
@@ -399,6 +412,9 @@ class MainWindow(QMainWindow):
         self._wator_widget.pause()
 
     def toolbar_pressed(self, action):
+        """
+        Handle a button being pressed on the toolbar.
+        """
         print(action.text)
         if action.text() == "Play":
             self._wator_widget.play()
