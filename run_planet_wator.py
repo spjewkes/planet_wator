@@ -9,9 +9,9 @@ import random
 from abc import ABC, abstractmethod
 
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QWidget, QMainWindow, QAction
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QWidget, QMainWindow, QAction, QSlider
 from PySide2.QtGui import QPainter, QPixmap, QIcon
-from PySide2.QtCore import QSize, QPoint, Slot, QTimer
+from PySide2.QtCore import QSize, QPoint, Slot, QTimer, Qt
 
 
 class WorldBase(ABC):
@@ -326,11 +326,11 @@ class WaTorWidget(QWidget):
         self._world.draw(painter)
         painter.end()
 
-    def play(self):
+    def play(self, rate):
         """
         Start or resume running the simulation.
         """
-        self._updater.start(250)
+        self._updater.start(rate)
 
     def pause(self):
         """
@@ -374,6 +374,8 @@ class MainWindow(QMainWindow):
         """
         Add the GUI elements to the window that represent the home state of the application.
         """
+        self._playing = False
+        self._ticks = 50
 
         toolbar = self.addToolBar("File")
         play = QAction(QIcon("icon_play.png"), "Play", self)
@@ -387,6 +389,15 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
         layout.addWidget(self._wator_widget)
+        slider = QSlider()
+        slider.setTickPosition(QSlider.TicksBothSides)
+        slider.setTickInterval(25)
+        slider.setRange(0, 500)
+        slider.setSingleStep(1)
+        slider.setOrientation(Qt.Horizontal)
+        slider.valueChanged.connect(self._setTickValue)
+        slider.setValue(self._ticks)
+        layout.addWidget(slider)
 
         self.centralWidget().setLayout(layout)
 
@@ -402,7 +413,8 @@ class MainWindow(QMainWindow):
         """
         Start running (or resume) the simulation.
         """
-        self._wator_widget.play()
+        self._wator_widget.play(self._ticks * 5)
+        self._playing = True
 
     @ Slot()
     def _pause(self):
@@ -410,6 +422,7 @@ class MainWindow(QMainWindow):
         Pause the running of the simulation.
         """
         self._wator_widget.pause()
+        self._playing = False
 
     def toolbar_pressed(self, action):
         """
@@ -417,11 +430,17 @@ class MainWindow(QMainWindow):
         """
         print(action.text)
         if action.text() == "Play":
-            self._wator_widget.play()
+            self._play()
         elif action.text() == "Pause":
-            self._wator_widget.pause()
+            self._pause()
         elif action.text() == "Quit":
             QtCore.QCoreApplication.instance().quit()
+
+    def _setTickValue(self, value):
+        self._ticks = value
+        if self._playing:
+            self._pause()
+            self._play()
 
 
 if __name__ == "__main__":
