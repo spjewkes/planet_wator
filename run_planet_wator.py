@@ -326,6 +326,14 @@ class WaTorWidget(QWidget):
         self._world.draw(painter)
         painter.end()
 
+    def reset(self):
+        """
+        Reset the simulation.
+        """
+        self.pause()
+        self._world.reset()
+        self.repaint()
+
     def play(self, rate):
         """
         Start or resume running the simulation.
@@ -385,6 +393,9 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         quit_app = QAction(QIcon("icon_quit.png"), "Quit", self)
         toolbar.addAction(quit_app)
+        toolbar.addSeparator()
+        reset = QAction(QIcon("icon_reset.png"), "Reset", self)
+        toolbar.addAction(reset)
         toolbar.actionTriggered[QAction].connect(self.toolbar_pressed)
 
         layout = QVBoxLayout()
@@ -435,6 +446,8 @@ class MainWindow(QMainWindow):
             self._pause()
         elif action.text() == "Quit":
             QtCore.QCoreApplication.instance().quit()
+        elif action.text() == "Reset":
+            self._wator_widget.reset()
 
     def _setTickValue(self, value):
         self._ticks = value
