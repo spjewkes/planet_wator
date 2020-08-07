@@ -371,6 +371,9 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
+        self._playing = False
+        self._ticks = 50
+
         self.setWindowTitle("Planet Wa-Tor")
         self.setWindowIcon(QIcon("icon_wator.png"))
         self.setCentralWidget(QWidget())
@@ -382,9 +385,6 @@ class MainWindow(QMainWindow):
         """
         Add the GUI elements to the window that represent the home state of the application.
         """
-        self._playing = False
-        self._ticks = 50
-
         toolbar = self.addToolBar("File")
         play = QAction(QIcon("icon_play.png"), "Play", self)
         toolbar.addAction(play)
@@ -406,7 +406,7 @@ class MainWindow(QMainWindow):
         slider.setRange(0, 500)
         slider.setSingleStep(1)
         slider.setOrientation(Qt.Horizontal)
-        slider.valueChanged.connect(self._setTickValue)
+        slider.valueChanged.connect(self._set_tick_value)
         slider.setValue(self._ticks)
         layout.addWidget(slider)
 
@@ -449,7 +449,7 @@ class MainWindow(QMainWindow):
         elif action.text() == "Reset":
             self._wator_widget.reset()
 
-    def _setTickValue(self, value):
+    def _set_tick_value(self, value):
         self._ticks = value
         if self._playing:
             self._pause()
