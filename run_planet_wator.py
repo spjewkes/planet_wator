@@ -9,89 +9,11 @@ import sys
 from PySide2 import QtCore
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, \
     QAction, QSlider, QDialog, QLabel
-from PySide2.QtGui import QPainter, QIcon
-from PySide2.QtCore import QSize, Slot, QTimer, Qt
+from PySide2.QtGui import QIcon
+from PySide2.QtCore import Slot, Qt
 
 from wator.settings import Settings
-from wator.world import World
-
-
-class WaTorWidget(QWidget):
-    """
-    Defines widget for displaying and handling the display of planet Wa-Tor.
-    """
-
-    def __init__(self, settings, parent=None):
-        super(WaTorWidget, self).__init__(parent)
-        self._size = QSize(80, 23)
-        self._scale = 16
-        self._ticks = 0
-        self._widget_size = self._size * self._scale
-        self._updater = QTimer(self)
-        self._updater.timeout.connect(self._update)
-
-        self._world = World(self._size, self._scale, settings)
-
-    def sizeHint(self):
-        """
-        The size of the WaTor widget in pixels.
-        """
-        return self._widget_size
-
-    def minimumSizeHint(self):
-        """
-        The minimum size of the WaTor widget in pixels.
-        """
-        return self._widget_size
-
-    def paintEvent(self, event):
-        """
-        Paint the widget.
-        """
-        super(WaTorWidget, self).paintEvent(event)
-
-        painter = QPainter(self)
-        self._world.draw(painter)
-        painter.end()
-
-    def reset(self, settings):
-        """
-        Reset the simulation.
-        """
-        self.pause()
-        self._world.reset(settings)
-        self.repaint()
-
-    def play(self, rate):
-        """
-        Start or resume running the simulation.
-        """
-        self._updater.start(rate)
-
-    def pause(self):
-        """
-        Pause the running of the simulation.
-        """
-        self._updater.stop()
-
-    def _update(self):
-        """
-        Update the simulation by one tick.
-        """
-        self._world.update(self._ticks)
-        self._ticks += 1
-        self.repaint()
-        fish, sharks = self._world.stats()
-        if fish == 0 and sharks == 0:
-            print("Both sharks and fish have become extinct.")
-            self.pause()
-        elif fish == 0 and sharks > 0:
-            print("No more fish. Wa-Tor is overrun with sharks.")
-            self.pause()
-        elif sharks == 0:
-            print("No more sharks. Wa-Tor will become overrun with fish.")
-            self.pause()
-        print("Fish: {} - Sharks: {}".format(fish, sharks))
+from wator.world import WaTorWidget
 
 
 class MainWindow(QMainWindow):
