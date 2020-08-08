@@ -353,6 +353,9 @@ class WaTorWidget(QWidget):
         if fish == 0 and sharks == 0:
             print("Both sharks and fish have become extinct.")
             self.pause()
+        elif fish == 0 and sharks > 0:
+            print("No more fish. Wa-Tor is overrun with sharks.")
+            self.pause()
         elif sharks == 0:
             print("No more sharks. Wa-Tor will become overrun with fish.")
             self.pause()
