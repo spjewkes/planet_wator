@@ -9,7 +9,7 @@ import random
 from abc import ABC, abstractmethod
 
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QWidget, QMainWindow, QAction, QSlider
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QAction, QSlider, QDialog
 from PySide2.QtGui import QPainter, QPixmap, QIcon
 from PySide2.QtCore import QSize, QPoint, Slot, QTimer, Qt
 
@@ -211,19 +211,14 @@ class World:
     Class for managing an instance of the world Wa-Tor.
     """
 
-    def __init__(self, size, scale):
+    def __init__(self, size, scale, settings):
         self._size = size
         self._scale = scale
-        self._nsharks = 20
-        self._nfish = 200
-        self._fbreed = 3
-        self._sbreed = 10
-        self._starve = 3
         self._chronons = 0
         self._mobs = None
         self._water = WorldWater()
 
-        self.reset()
+        self.reset(settings)
 
     @property
     def size(self):
@@ -240,7 +235,7 @@ class World:
         """
         return self._mobs
 
-    def reset(self):
+    def reset(self, settings):
         """
         Reset the world.
         """
@@ -251,11 +246,12 @@ class World:
         random.shuffle(points)
 
         self._mobs = dict()
-        for _ in range(self._nsharks):
-            self.mobs[points.pop(0)] = WorldShark(self._sbreed, self._starve)
+        for _ in range(settings.nsharks):
+            self.mobs[points.pop(0)] = WorldShark(
+                settings.sbreed, settings.starve)
 
-        for _ in range(self._nfish):
-            self.mobs[points.pop(0)] = WorldFish(self._fbreed)
+        for _ in range(settings.nfish):
+            self.mobs[points.pop(0)] = WorldFish(settings.fbreed)
 
     def draw(self, painter):
         """
@@ -293,7 +289,7 @@ class WaTorWidget(QWidget):
     Defines widget for displaying and handling the display of planet Wa-Tor.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, settings, parent=None):
         super(WaTorWidget, self).__init__(parent)
         self._size = QSize(80, 23)
         self._scale = 16
@@ -302,7 +298,7 @@ class WaTorWidget(QWidget):
         self._updater = QTimer(self)
         self._updater.timeout.connect(self._update)
 
-        self._world = World(self._size, self._scale)
+        self._world = World(self._size, self._scale, settings)
 
     def sizeHint(self):
         """
@@ -326,12 +322,12 @@ class WaTorWidget(QWidget):
         self._world.draw(painter)
         painter.end()
 
-    def reset(self):
+    def reset(self, settings):
         """
         Reset the simulation.
         """
         self.pause()
-        self._world.reset()
+        self._world.reset(settings)
         self.repaint()
 
     def play(self, rate):
@@ -363,6 +359,62 @@ class WaTorWidget(QWidget):
         print("Fish: {} - Sharks: {}".format(fish, sharks))
 
 
+class Settings(QDialog):
+    """
+    Dialog box for changing settings.
+    """
+
+    def __init__(self):
+        super(Settings, self).__init__()
+
+        self._nsharks = 20
+        self._nfish = 200
+        self._fbreed = 3
+        self._sbreed = 10
+        self._starve = 3
+
+        self.home()
+
+    def home(self):
+        cancel_ok_layout = QHBoxLayout()
+        # cancel_button()
+
+    @property
+    def nsharks(self):
+        """
+        Number of sharks at start,
+        """
+        return self._nsharks
+
+    @property
+    def nfish(self):
+        """
+        Number of fish at start.
+        """
+        return self._nfish
+
+    @property
+    def fbreed(self):
+        """
+        Number of ticks it takes for a fish to breed.
+        """
+        return self._fbreed
+
+    @property
+    def sbreed(self):
+        """
+        Number of ticks it takes for a shark to breed.
+        """
+        return self._sbreed
+
+    @property
+    def starve(self):
+        """
+        Number of ticks before a sharks dies (if it hasn't eaten).
+        """
+        return self._starve
+
+
 class MainWindow(QMainWindow):
     """
     Main application entry-point for Wa-Tor.
@@ -373,12 +425,13 @@ class MainWindow(QMainWindow):
 
         self._playing = False
         self._ticks = 50
+        self._settings = Settings()
 
         self.setWindowTitle("Planet Wa-Tor")
         self.setWindowIcon(QIcon("icon_wator.png"))
         self.setCentralWidget(QWidget())
 
-        self._wator_widget = WaTorWidget()
+        self._wator_widget = WaTorWidget(self._settings)
         self.home()
 
     def home(self):
@@ -447,7 +500,8 @@ class MainWindow(QMainWindow):
         elif action.text() == "Quit":
             QtCore.QCoreApplication.instance().quit()
         elif action.text() == "Reset":
-            self._wator_widget.reset()
+            # result = self._settings.exec_()
+            self._wator_widget.reset(self._settings)
 
     def _set_tick_value(self, value):
         self._ticks = value
