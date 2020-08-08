@@ -10,10 +10,10 @@ from PySide2 import QtCore
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, \
     QAction, QSlider, QDialog, QLabel
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, QTimer, QSize
 
 from wator.settings import Settings
-from wator.world import WaTorWidget
+from wator.world import World, WaTorWidget
 
 
 class MainWindow(QMainWindow):
@@ -25,14 +25,20 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
 
         self._playing = False
-        self._ticks = 50
+        self._tickpause = 50
+        self._size = QSize(80, 40)
         self._settings = Settings()
+        self._world = World(self._size, self._settings)
+
+        self._ticks = 0
+        self._updater = QTimer(self)
+        self._updater.timeout.connect(self._tick)
 
         self.setWindowTitle("Planet Wa-Tor")
         self.setWindowIcon(QIcon("res/icon_wator.png"))
         self.setCentralWidget(QWidget())
 
-        self._wator_widget = WaTorWidget(self._settings)
+        self._wator_widget = WaTorWidget(self._world)
         self.home()
 
     def home(self):
@@ -64,7 +70,7 @@ class MainWindow(QMainWindow):
         slider.setSingleStep(1)
         slider.setOrientation(Qt.Horizontal)
         slider.valueChanged.connect(self._set_tick_value)
-        slider.setValue(self._ticks)
+        slider.setValue(self._tickpause)
         slider_layout.addWidget(slider)
         layout.addLayout(slider_layout)
 
@@ -76,41 +82,63 @@ class MainWindow(QMainWindow):
         """
         QtCore.QCoreApplication.instance().quit()
 
-    def _play(self):
+    def play(self):
         """
         Start running (or resume) the simulation.
         """
-        self._wator_widget.play(self._ticks * 5)
+        self._updater.start(self._tickpause * 5)
         self._playing = True
 
-    def _pause(self):
+    def pause(self):
         """
         Pause the running of the simulation.
         """
-        self._wator_widget.pause()
         self._playing = False
+        self._updater.stop()
 
-    def _reset(self):
+    def reset(self):
         """
         Reset the application.
         """
-        self._pause()
+        self._ticks = 0
+        self.pause()
         if self._settings.exec_() == QDialog.Accepted:
-            self._wator_widget.reset(self._settings)
+            self._world.reset(self._settings)
+            self._wator_widget.repaint()
 
     def toolbar_pressed(self, action):
         """
         Handle a button being pressed on the toolbar.
         """
-        actions = {"Play": self._play, "Pause": self._pause,
-                   "Quit": self._quit, "Reset": self._reset}
+        actions = {"Play": self.play, "Pause": self.pause,
+                   "Quit": self._quit, "Reset": self.reset}
         actions[action.text()]()
 
     def _set_tick_value(self, value):
-        self._ticks = value
+        self._tickpause = value
         if self._playing:
-            self._pause()
-            self._play()
+            self.pause()
+            self.play()
+
+    def _tick(self):
+        """
+        Tick the world simulation.
+        """
+        self._ticks += 1
+        self._world.update(self._ticks)
+        self._wator_widget.repaint()
+
+        fish, sharks = self._world.stats()
+        if fish == 0 and sharks == 0:
+            print("Both sharks and fish have become extinct.")
+            self.pause()
+        elif fish == 0 and sharks > 0:
+            print("No more fish. Wa-Tor is overrun with sharks.")
+            self.pause()
+        elif sharks == 0:
+            print("No more sharks. Wa-Tor will become overrun with fish.")
+            self.pause()
+        print("Fish: {} - Sharks: {}".format(fish, sharks))
 
 
 if __name__ == "__main__":
