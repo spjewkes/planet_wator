@@ -9,7 +9,7 @@ import random
 from abc import ABC, abstractmethod
 
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QAction, QSlider, QDialog
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QAction, QSlider, QDialog, QPushButton
 from PySide2.QtGui import QPainter, QPixmap, QIcon
 from PySide2.QtCore import QSize, QPoint, Slot, QTimer, Qt
 
@@ -377,7 +377,22 @@ class Settings(QDialog):
 
     def home(self):
         cancel_ok_layout = QHBoxLayout()
-        # cancel_button()
+
+        cancel_button = QPushButton("&Cancel", self)
+        cancel_button.clicked.connect(self._cancel)
+        cancel_ok_layout.addWidget(cancel_button)
+
+        ok_button = QPushButton("&OK", self)
+        ok_button.clicked.connect(self._okay)
+        cancel_ok_layout.addWidget(ok_button)
+
+        self.setLayout(cancel_ok_layout)
+
+    def _cancel(self):
+        self.reject()
+
+    def _okay(self):
+        self.accept()
 
     @property
     def nsharks(self):
@@ -500,8 +515,8 @@ class MainWindow(QMainWindow):
         elif action.text() == "Quit":
             QtCore.QCoreApplication.instance().quit()
         elif action.text() == "Reset":
-            # result = self._settings.exec_()
-            self._wator_widget.reset(self._settings)
+            if self._settings.exec_() == QDialog.Accepted:
+                self._wator_widget.reset(self._settings)
 
     def _set_tick_value(self, value):
         self._ticks = value
