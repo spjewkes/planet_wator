@@ -13,7 +13,7 @@ from PySide2.QtGui import QIcon
 from PySide2.QtCore import Qt, QTimer, QSize
 
 from wator.settings import Settings
-from wator.world import World, WaTorWidget
+from wator.world import World, WaTorWidget, WaTorGraph
 
 
 class MainWindow(QMainWindow):
@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(QWidget())
 
         self._wator_widget = WaTorWidget(self._world)
+        self._wator_graph = WaTorGraph(self._world)
         self.home()
 
     def home(self):
@@ -60,6 +61,7 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
         layout.addWidget(self._wator_widget)
+        layout.addSpacing(10)
 
         slider_layout = QHBoxLayout()
         slider_layout.addWidget(QLabel("Tick Speed", self))
@@ -73,6 +75,9 @@ class MainWindow(QMainWindow):
         slider.setValue(self._tickpause)
         slider_layout.addWidget(slider)
         layout.addLayout(slider_layout)
+
+        layout.addSpacing(10)
+        layout.addWidget(self._wator_graph)
 
         self.centralWidget().setLayout(layout)
 
@@ -105,6 +110,7 @@ class MainWindow(QMainWindow):
         if self._settings.exec_() == QDialog.Accepted:
             self._world.reset(self._settings)
             self._wator_widget.repaint()
+            self._wator_graph.reset()
 
     def toolbar_pressed(self, action):
         """
@@ -127,6 +133,7 @@ class MainWindow(QMainWindow):
         self._ticks += 1
         self._world.update(self._ticks)
         self._wator_widget.repaint()
+        self._wator_graph.repaint()
 
         fish, sharks = self._world.stats()
         if fish == 0 and sharks == 0:
@@ -138,7 +145,6 @@ class MainWindow(QMainWindow):
         elif sharks == 0:
             print("No more sharks. Wa-Tor will become overrun with fish.")
             self.pause()
-        print("Fish: {} - Sharks: {}".format(fish, sharks))
 
 
 if __name__ == "__main__":
