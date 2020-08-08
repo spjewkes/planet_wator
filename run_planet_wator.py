@@ -570,6 +570,7 @@ class MainWindow(QMainWindow):
         elif action.text() == "Quit":
             QtCore.QCoreApplication.instance().quit()
         elif action.text() == "Reset":
+            self._pause()
             if self._settings.exec_() == QDialog.Accepted:
                 self._wator_widget.reset(self._settings)
 
