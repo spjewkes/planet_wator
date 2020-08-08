@@ -108,7 +108,7 @@ class WorldFish(WorldBase):
 
     def __init__(self, breed, lastupdate=-1):
         super(WorldFish, self).__init__(
-            "fish", QPixmap("sprite_fish.png"), breed, lastupdate)
+            "fish", QPixmap("res/sprite_fish.png"), breed, lastupdate)
 
     def make_move(self, oldpos, world):
         """
@@ -142,7 +142,7 @@ class WorldShark(WorldBase):
 
     def __init__(self, breed, starve, lastupdate=-1):
         super(WorldShark, self).__init__(
-            "shark", QPixmap("sprite_shark.png"), breed, lastupdate)
+            "shark", QPixmap("res/sprite_shark.png"), breed, lastupdate)
         self._starve = starve
         self._full = starve
 
@@ -193,7 +193,7 @@ class WorldWater(WorldBase):
 
     def __init__(self):
         super(WorldWater, self).__init__(
-            "water", QPixmap("sprite_water.png"))
+            "water", QPixmap("res/sprite_water.png"))
 
     def make_move(self, oldpos, world):
         """
@@ -508,7 +508,7 @@ class MainWindow(QMainWindow):
         self._settings = Settings()
 
         self.setWindowTitle("Planet Wa-Tor")
-        self.setWindowIcon(QIcon("icon_wator.png"))
+        self.setWindowIcon(QIcon("res/icon_wator.png"))
         self.setCentralWidget(QWidget())
 
         self._wator_widget = WaTorWidget(self._settings)
@@ -519,20 +519,23 @@ class MainWindow(QMainWindow):
         Add the GUI elements to the window that represent the home state of the application.
         """
         toolbar = self.addToolBar("File")
-        play = QAction(QIcon("icon_play.png"), "Play", self)
+        play = QAction(QIcon("res/icon_play.png"), "Play", self)
         toolbar.addAction(play)
-        pause = QAction(QIcon("icon_pause.png"), "Pause", self)
+        pause = QAction(QIcon("res/icon_pause.png"), "Pause", self)
         toolbar.addAction(pause)
         toolbar.addSeparator()
-        quit_app = QAction(QIcon("icon_quit.png"), "Quit", self)
+        quit_app = QAction(QIcon("res/icon_quit.png"), "Quit", self)
         toolbar.addAction(quit_app)
         toolbar.addSeparator()
-        reset = QAction(QIcon("icon_reset.png"), "Reset", self)
+        reset = QAction(QIcon("res/icon_reset.png"), "Reset", self)
         toolbar.addAction(reset)
         toolbar.actionTriggered[QAction].connect(self.toolbar_pressed)
 
         layout = QVBoxLayout()
         layout.addWidget(self._wator_widget)
+
+        slider_layout = QHBoxLayout()
+        slider_layout.addWidget(QLabel("Tick Speed", self))
         slider = QSlider()
         slider.setTickPosition(QSlider.TicksBothSides)
         slider.setTickInterval(25)
@@ -541,7 +544,8 @@ class MainWindow(QMainWindow):
         slider.setOrientation(Qt.Horizontal)
         slider.valueChanged.connect(self._set_tick_value)
         slider.setValue(self._ticks)
-        layout.addWidget(slider)
+        slider_layout.addWidget(slider)
+        layout.addLayout(slider_layout)
 
         self.centralWidget().setLayout(layout)
 
@@ -594,7 +598,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     # Create the Qt Application
     APP = QApplication(sys.argv)
-    APP.setWindowIcon(QIcon("icon_wator.png"))
+    APP.setWindowIcon(QIcon("res/icon_wator.png"))
     # Create and show the form
     MAIN = MainWindow()
     MAIN.show()
