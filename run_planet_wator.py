@@ -10,7 +10,7 @@ from PySide2 import QtCore
 from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, \
     QAction, QSlider, QDialog, QLabel
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import Slot, Qt
+from PySide2.QtCore import Qt
 
 from wator.settings import Settings
 from wator.world import WaTorWidget
@@ -70,14 +70,12 @@ class MainWindow(QMainWindow):
 
         self.centralWidget().setLayout(layout)
 
-    @ Slot()
     def _quit(self):
         """
         Quit the application.
         """
         QtCore.QCoreApplication.instance().quit()
 
-    @ Slot()
     def _play(self):
         """
         Start running (or resume) the simulation.
@@ -85,7 +83,6 @@ class MainWindow(QMainWindow):
         self._wator_widget.play(self._ticks * 5)
         self._playing = True
 
-    @ Slot()
     def _pause(self):
         """
         Pause the running of the simulation.
@@ -93,21 +90,21 @@ class MainWindow(QMainWindow):
         self._wator_widget.pause()
         self._playing = False
 
+    def _reset(self):
+        """
+        Reset the application.
+        """
+        self._pause()
+        if self._settings.exec_() == QDialog.Accepted:
+            self._wator_widget.reset(self._settings)
+
     def toolbar_pressed(self, action):
         """
         Handle a button being pressed on the toolbar.
         """
-        print(action.text)
-        if action.text() == "Play":
-            self._play()
-        elif action.text() == "Pause":
-            self._pause()
-        elif action.text() == "Quit":
-            QtCore.QCoreApplication.instance().quit()
-        elif action.text() == "Reset":
-            self._pause()
-            if self._settings.exec_() == QDialog.Accepted:
-                self._wator_widget.reset(self._settings)
+        actions = {"Play": self._play, "Pause": self._pause,
+                   "Quit": self._quit, "Reset": self._reset}
+        actions[action.text()]()
 
     def _set_tick_value(self, value):
         self._ticks = value
