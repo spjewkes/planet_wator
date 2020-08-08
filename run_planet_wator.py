@@ -9,7 +9,8 @@ import random
 from abc import ABC, abstractmethod
 
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QAction, QSlider, QDialog, QPushButton, QLabel
+from PySide2.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, \
+    QAction, QSlider, QDialog, QPushButton, QLabel
 from PySide2.QtGui import QPainter, QPixmap, QIcon
 from PySide2.QtCore import QSize, QPoint, Slot, QTimer, Qt
 
@@ -380,6 +381,9 @@ class Settings(QDialog):
 
     @staticmethod
     def helper_create_slider(interval, minrange, maxrange, value):
+        """
+        Utility function to create a slider bar for the settings dialog.
+        """
         slider = QSlider()
         slider.setTickPosition(QSlider.TicksBothSides)
         slider.setTickInterval(interval)
@@ -391,6 +395,9 @@ class Settings(QDialog):
         return slider
 
     def home(self):
+        """
+        Set up the layout of the setting dialog.
+        """
         layout = QVBoxLayout()
 
         nfish_layout = QHBoxLayout()
