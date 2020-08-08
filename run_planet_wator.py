@@ -15,7 +15,7 @@ from PySide2.QtGui import QPainter, QPixmap, QIcon
 from PySide2.QtCore import QSize, QPoint, Slot, QTimer, Qt
 
 
-class WorldBase(ABC):
+class MobBase(ABC):
     """
     Base class describing a world object.
     """
@@ -101,13 +101,13 @@ class WorldBase(ABC):
                     world.mobs[currpos] = baby
 
 
-class WorldFish(WorldBase):
+class MobFish(MobBase):
     """
     Implementation of a fish world object.
     """
 
     def __init__(self, breed, lastupdate=-1):
-        super(WorldFish, self).__init__(
+        super(MobFish, self).__init__(
             "fish", QPixmap("res/sprite_fish.png"), breed, lastupdate)
 
     def make_move(self, oldpos, world):
@@ -116,7 +116,7 @@ class WorldFish(WorldBase):
         """
         moved = False
 
-        moves = [move for move in WorldBase.generate_move_list(
+        moves = [move for move in MobBase.generate_move_list(
             oldpos, world) if move not in world.mobs]
 
         if moves:
@@ -131,17 +131,17 @@ class WorldFish(WorldBase):
         Check whether a fish should reproduce or not.
         """
         if self._age % self._breed == 0:
-            return WorldFish(self._breed, self._last_update)
+            return MobFish(self._breed, self._last_update)
         return None
 
 
-class WorldShark(WorldBase):
+class MobShark(MobBase):
     """
     Implementation of a shark world object.
     """
 
     def __init__(self, breed, starve, lastupdate=-1):
-        super(WorldShark, self).__init__(
+        super(MobShark, self).__init__(
             "shark", QPixmap("res/sprite_shark.png"), breed, lastupdate)
         self._starve = starve
         self._full = starve
@@ -159,10 +159,10 @@ class WorldShark(WorldBase):
         """
         moved = False
 
-        moves = WorldBase.generate_move_list(oldpos, world)
+        moves = MobBase.generate_move_list(oldpos, world)
         fishmoves = [
             move for move in moves if move in world.mobs and
-            isinstance(world.mobs[move], WorldFish)]
+            isinstance(world.mobs[move], MobFish)]
         emptymoves = [move for move in moves if move not in world.mobs]
 
         if fishmoves:
@@ -182,17 +182,17 @@ class WorldShark(WorldBase):
         Check whether a shark should reproduce or not.
         """
         if self._age % self._breed == 0:
-            return WorldShark(self._breed, self._starve, self._last_update)
+            return MobShark(self._breed, self._starve, self._last_update)
         return None
 
 
-class WorldWater(WorldBase):
+class MobWater(MobBase):
     """
     Implementation of a water world object.
     """
 
     def __init__(self):
-        super(WorldWater, self).__init__(
+        super(MobWater, self).__init__(
             "water", QPixmap("res/sprite_water.png"))
 
     def make_move(self, oldpos, world):
@@ -217,7 +217,7 @@ class World:
         self._scale = scale
         self._chronons = 0
         self._mobs = None
-        self._water = WorldWater()
+        self._water = MobWater()
 
         self.reset(settings)
 
@@ -248,11 +248,11 @@ class World:
 
         self._mobs = dict()
         for _ in range(settings.nsharks):
-            self.mobs[points.pop(0)] = WorldShark(
+            self.mobs[points.pop(0)] = MobShark(
                 settings.sbreed, settings.starve)
 
         for _ in range(settings.nfish):
-            self.mobs[points.pop(0)] = WorldFish(settings.fbreed)
+            self.mobs[points.pop(0)] = MobFish(settings.fbreed)
 
     def draw(self, painter):
         """
@@ -279,9 +279,9 @@ class World:
         Return the number of fish and sharks that are currently inhabiting the world.
         """
         fish = len([mob for mob in self.mobs.values()
-                    if isinstance(mob, WorldFish)])
+                    if isinstance(mob, MobFish)])
         sharks = len([mob for mob in self.mobs.values()
-                      if isinstance(mob, WorldShark)])
+                      if isinstance(mob, MobShark)])
         return fish, sharks
 
 
