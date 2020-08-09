@@ -134,8 +134,8 @@ class WaTorGraph(QWidget):
         self._widget_size = size * scale
         self._world = world
         self._tick = 0
-        self._prev_shark = self.helper_calc_y_pos(0)
-        self._prev_fish = self.helper_calc_y_pos(0)
+        self._prev_shark = 0
+        self._prev_fish = 0
         self._prev_tick = 0
 
         self._scaler = world.size.width() * world.size.height() + 1
@@ -189,9 +189,9 @@ class WaTorGraph(QWidget):
 
         draw = ImageDraw.Draw(self._image)
         draw.line([(self._prev_tick, self._prev_shark),
-                   (self._tick, shark)], (0, 0, 255), 1)
+                   (self._tick, shark)], (0, 0, 255), 2)
         draw.line([(self._prev_tick, self._prev_fish),
-                   (self._tick, fish)], (0, 255, 0), 1)
+                   (self._tick, fish)], (0, 255, 0), 2)
 
         painter.drawImage(QPoint(0, 0), ImageQt(self._image))
         painter.end()
@@ -199,7 +199,7 @@ class WaTorGraph(QWidget):
         self._prev_tick = self._tick
         self._prev_shark = shark
         self._prev_fish = fish
-        self._tick += 1
+        self._tick += 2
 
         if self._tick >= self._widget_size.width():
             self.reset()
