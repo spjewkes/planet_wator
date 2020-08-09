@@ -6,8 +6,10 @@ Defines the world of planet Wa-Tor.
 import random
 
 from PySide2.QtWidgets import QWidget
-from PySide2.QtGui import QPainter, QImage
+from PySide2.QtGui import QPainter
 from PySide2.QtCore import QPoint, QSize
+from PIL import Image, ImageDraw
+from PIL.ImageQt import ImageQt
 
 from wator.mobs import MobWater, MobShark, MobFish
 
@@ -132,9 +134,14 @@ class WaTorGraph(QWidget):
         self._widget_size = size * scale
         self._world = world
         self._tick = 0
+        self._prev_shark = self.helper_calc_y_pos(0)
+        self._prev_fish = self.helper_calc_y_pos(0)
+        self._prev_tick = 0
+
         self._scaler = world.size.width() * world.size.height() + 1
 
-        self._image = QImage(self._widget_size, QImage.Format_RGB32)
+        self._image = Image.new(
+            "RGB", self._widget_size.toTuple(), (255, 255, 255))
         self.reset()
 
     def sizeHint(self):
@@ -160,7 +167,12 @@ class WaTorGraph(QWidget):
         Reset the graph.
         """
         self._tick = 0
-        self._image.fill(0xff777777)
+        self._prev_shark = self.helper_calc_y_pos(0)
+        self._prev_fish = self.helper_calc_y_pos(0)
+        self._prev_tick = 0
+
+        draw = ImageDraw.Draw(self._image)
+        draw.rectangle([(0, 0), self._image.size], (127, 127, 127))
 
     def paintEvent(self, event):
         """
@@ -171,14 +183,22 @@ class WaTorGraph(QWidget):
         painter = QPainter(self)
 
         fish, sharks = self._world.stats()
-        xpos = self._tick
 
-        self._image.setPixel(xpos, self.helper_calc_y_pos(fish), 0xff00ff00)
-        self._image.setPixel(xpos, self.helper_calc_y_pos(sharks), 0xff0000ff)
+        shark = self.helper_calc_y_pos(sharks)
+        fish = self.helper_calc_y_pos(fish)
 
-        painter.drawImage(QPoint(0, 0), self._image)
+        draw = ImageDraw.Draw(self._image)
+        draw.line([(self._prev_tick, self._prev_shark),
+                   (self._tick, shark)], (0, 0, 255), 1)
+        draw.line([(self._prev_tick, self._prev_fish),
+                   (self._tick, fish)], (0, 255, 0), 1)
+
+        painter.drawImage(QPoint(0, 0), ImageQt(self._image))
         painter.end()
 
+        self._prev_tick = self._tick
+        self._prev_shark = shark
+        self._prev_fish = fish
         self._tick += 1
 
         if self._tick >= self._widget_size.width():
