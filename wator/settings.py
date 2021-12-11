@@ -3,8 +3,8 @@
 Stores the settings needed by the Planet Wa-Tor application.
 """
 
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QSlider, QPushButton, QLabel
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QSlider, QPushButton, QLabel
+from PySide6.QtCore import Qt
 
 
 class Settings(QDialog):

@@ -7,8 +7,8 @@ import random
 
 from abc import ABC, abstractmethod
 
-from PySide2.QtGui import QPixmap
-from PySide2.QtCore import QPoint
+from PySide6.QtGui import QPixmap
+from PySide6.QtCore import QPoint
 
 
 class MobBase(ABC):
